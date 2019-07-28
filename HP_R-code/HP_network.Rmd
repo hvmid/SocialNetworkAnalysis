@@ -1,0 +1,667 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(igraph)
+library(networkD3)
+```
+
+
+```{r}
+#----------------------------------------- Reading the books -------------------------------------------------------------
+
+book1<- as.matrix(read.table("hpbook1.txt"))
+names.df<-read.table("hpnames.txt", header=TRUE)
+book1.graph<-graph_from_adjacency_matrix(book1, mode="undirected")
+V(book1.graph)$name=as.vector(names.df$name)
+plot(simplify(book1.graph), layout=layout.fruchterman.reingold(book1.graph, niter=10000), vertex.size=1+(V(book1.graph)$centrality),vertex.label.cex=0.5)
+summary(simplify(book1.graph))
+
+#Edge Density
+edge_density(book1.graph, loops = FALSE)
+
+#Average Network Degree
+mean(degree(book1.graph, v = V(book1.graph), mode = "all", loops = FALSE, normalized = FALSE))
+
+#Degree Distrubution
+hist(degree_distribution(book1.graph, cumulative = FALSE), main="degree distribution")
+
+#Clustering
+transitivity(simplify(book1.graph))#Global
+transitivity(simplify(book1.graph), type = "average")#Local Avg
+transitivity(simplify(book1.graph), type = "local")#Local
+
+#Centrality Scores
+eigen.cent <- eigen_centrality(book1.graph)
+V(book1.graph)$centrality<-eigen.cent$vector
+
+write.csv(V(book1.graph)$name, file = "doo.csv")
+nodes2 <- read.csv("doo.csv", header=T)
+nodes2[, 3]<-V(book1.graph)$centrality
+dat1<-nodes2[order(-nodes2$V3),]
+
+#Betweeness Score
+nodes2[,4]<-betweenness(book1.graph)
+dat2<-nodes2[order(-nodes2$V4),]
+
+#Closeness Score
+nodes2[,5]<-closeness(book1.graph)
+dat3<-nodes2[order(-nodes2$V5),]
+
+#Hubs Scores
+nodes2[,6]<-hub_score(book1.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat4<-nodes2[order(-nodes2$V6),]
+
+#Authority Scores
+nodes2[,7]<-authority_score(book1.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat5<-nodes2[order(-nodes2$V7),]
+
+#Transitivity
+nodes2[,8]<-transitivity(simplify(book1.graph), type = "local")#Local
+dat6<-nodes2[order(-nodes2$V8),]
+
+head(dat1$x)
+head(dat2$x)
+head(dat3$x)
+head(dat4$x)
+head(dat5$x)
+head(dat6$x)
+
+#Community Detection
+wc <- walktrap.community(simplify(book1.graph))
+plot(wc, simplify(book1.graph), vertex.size=2, vertex.label.cex=0.35, layout=layout.fruchterman.reingold)
+modularity(wc)
+table(membership(wc))
+mean_distance(simplify(book1.graph), directed = FALSE, unconnected = TRUE)
+diameter(book1.graph, directed = FALSE, unconnected = TRUE, weights = NULL)
+
+
+
+#Heatmap
+dimnames(book1) <- list(as.vector(names.df$name), as.vector(names.df$name))
+heatmap(book1, symm=TRUE, col=colors(), keep.dendro = FALSE)
+```
+
+```{r}
+book2<- as.matrix(read.table("hpbook2.txt"))
+names.df<-read.table("hpnames.txt", header=TRUE)
+book2.graph<-graph_from_adjacency_matrix(book2, mode="undirected")
+V(book2.graph)$name=as.vector(names.df$name)
+plot(simplify(book2.graph), layout=layout.fruchterman.reingold(book2.graph, niter=10000), vertex.size=1.5,vertex.label.cex=0.5)
+summary(simplify(book2.graph))
+
+#Edge Density
+edge_density(book2.graph, loops = FALSE)
+
+#Average Network Degree
+mean(degree(book2.graph, v = V(book2.graph), mode = "all", loops = FALSE, normalized = FALSE))
+
+#Degree Distrubution
+hist(degree_distribution(book2.graph, cumulative = FALSE), main="degree distribution")
+
+#Clustering
+transitivity(simplify(book2.graph))#Global
+transitivity(simplify(book2.graph), type = "average")#Local Avg
+
+#Centrality Scores
+eigen.cent <- eigen_centrality(book2.graph)
+V(book2.graph)$centrality<-eigen.cent$vector
+
+write.csv(V(book2.graph)$name, file = "doo.csv")
+nodes2 <- read.csv("doo.csv", header=T)
+nodes2[, 3]<-V(book2.graph)$centrality
+dat1<-nodes2[order(-nodes2$V3),]
+
+#Betweeness Score
+nodes2[,4]<-betweenness(book2.graph)
+dat2<-nodes2[order(-nodes2$V4),]
+
+#Closeness Score
+nodes2[,5]<-closeness(book2.graph)
+dat3<-nodes2[order(-nodes2$V5),]
+
+#Hubs Scores
+nodes2[,6]<-hub_score(book2.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat4<-nodes2[order(-nodes2$V6),]
+
+#Authority Scores
+nodes2[,7]<-authority_score(book2.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat5<-nodes2[order(-nodes2$V7),]
+
+#Transitivity
+nodes2[,8]<-transitivity(simplify(book2.graph), type = "local")#Local
+dat6<-nodes2[order(-nodes2$V8),]
+  
+head(dat1$x)
+head(dat2$x)
+head(dat3$x)
+head(dat4$x)
+head(dat5$x)
+head(dat6$x)
+
+#Community Detection
+wc <- walktrap.community(simplify(book2.graph))
+plot(wc, simplify(book2.graph), vertex.size=2, vertex.label.cex=0.35, layout=layout.fruchterman.reingold)
+
+#Heatmap
+dimnames(book2) <- list(as.vector(names.df$name), as.vector(names.df$name))
+heatmap(book2, symm=TRUE, col=colors(), keep.dendro = FALSE)
+```
+```{r}
+book3<- as.matrix(read.table("hpbook3.txt"))
+names.df<-read.table("hpnames.txt", header=TRUE)
+book3.graph<-graph_from_adjacency_matrix(book3, mode="undirected")
+V(book3.graph)$name=as.vector(names.df$name)
+plot(simplify(book3.graph), layout=layout.fruchterman.reingold(book3.graph, niter=10000), vertex.size=1.5,vertex.label.cex=0.5)
+summary(simplify(book3.graph))
+
+#Edge Density
+edge_density(book3.graph, loops = FALSE)
+
+#Average Network Degree
+mean(degree(book3.graph, v = V(book3.graph), mode = "all", loops = FALSE, normalized = FALSE))
+
+#Degree Distrubution
+hist(degree_distribution(book3.graph, cumulative = FALSE), main="degree distribution")
+
+#Clustering
+transitivity(simplify(book3.graph))#Global
+transitivity(simplify(book3.graph), type = "average")#Local Avg
+
+#Centrality Scores
+eigen.cent <- eigen_centrality(book3.graph)
+V(book3.graph)$centrality<-eigen.cent$vector
+
+write.csv(V(book3.graph)$name, file = "doo.csv")
+nodes2 <- read.csv("doo.csv", header=T)
+nodes2[, 3]<-V(book2.graph)$centrality
+dat1<-nodes2[order(-nodes2$V3),]
+
+#Betweeness Score
+nodes2[,4]<-betweenness(book3.graph)
+dat2<-nodes2[order(-nodes2$V4),]
+
+#Closeness Score
+nodes2[,5]<-closeness(book3.graph)
+dat3<-nodes2[order(-nodes2$V5),]
+
+#Hubs Scores
+nodes2[,6]<-hub_score(book3.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat4<-nodes2[order(-nodes2$V6),]
+
+#Authority Scores
+nodes2[,7]<-authority_score(book3.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat5<-nodes2[order(-nodes2$V7),]
+
+#Transitivity
+nodes2[,8]<-transitivity(simplify(book3.graph), type = "local")#Local
+dat6<-nodes2[order(-nodes2$V8),]
+  
+head(dat1$x)
+head(dat2$x)
+head(dat3$x)
+head(dat4$x)
+head(dat5$x)
+head(dat6$x)
+
+#Community Detection
+wc <- walktrap.community(simplify(book3.graph))
+plot(wc, simplify(book3.graph), vertex.size=2, vertex.label.cex=0.35, layout=layout.fruchterman.reingold)
+
+#Heatmap
+dimnames(book3) <- list(as.vector(names.df$name), as.vector(names.df$name))
+heatmap(book3, symm=TRUE, col=colors(), keep.dendro = FALSE)
+```
+
+```{r}
+book4<- as.matrix(read.table("hpbook4.txt"))
+names.df<-read.table("hpnames.txt", header=TRUE)
+book4.graph<-graph_from_adjacency_matrix(book4, mode="undirected")
+V(book4.graph)$name=as.vector(names.df$name)
+plot(simplify(book4.graph), layout=layout.fruchterman.reingold(book4.graph, niter=10000), vertex.size=1.5,vertex.label.cex=0.5)
+summary(simplify(book4.graph))
+
+#Edge Density
+edge_density(book4.graph, loops = FALSE)
+
+#Average Network Degree
+mean(degree(book4.graph, v = V(book4.graph), mode = "all", loops = FALSE, normalized = FALSE))
+
+#Degree Distrubution
+hist(degree_distribution(book4.graph, cumulative = FALSE), main="degree distribution")
+
+#Clustering
+transitivity(simplify(book4.graph))#Global
+transitivity(simplify(book4.graph), type = "average")#Local Avg
+
+#Centrality Scores
+eigen.cent <- eigen_centrality(book4.graph)
+V(book4.graph)$centrality<-eigen.cent$vector
+
+write.csv(V(book4.graph)$name, file = "doo.csv")
+nodes2 <- read.csv("doo.csv", header=T)
+nodes2[, 3]<-V(book4.graph)$centrality
+dat1<-nodes2[order(-nodes2$V3),]
+
+#Betweeness Score
+nodes2[,4]<-betweenness(book4.graph)
+dat2<-nodes2[order(-nodes2$V4),]
+
+#Closeness Score
+nodes2[,5]<-closeness(book4.graph)
+dat3<-nodes2[order(-nodes2$V5),]
+
+#Hubs Scores
+nodes2[,6]<-hub_score(book4.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat4<-nodes2[order(-nodes2$V6),]
+
+#Authority Scores
+nodes2[,7]<-authority_score(book4.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat5<-nodes2[order(-nodes2$V7),]
+
+#Transitivity
+nodes2[,8]<-transitivity(simplify(book4.graph), type = "local")#Local
+dat6<-nodes2[order(-nodes2$V8),]
+  
+head(dat1$x)
+head(dat2$x)
+head(dat3$x)
+head(dat4$x)
+head(dat5$x)
+head(dat6$x)
+
+#Community Detection
+wc <- walktrap.community(simplify(book4.graph))
+plot(wc, simplify(book4.graph), vertex.size=2, vertex.label.cex=0.35, layout=layout.fruchterman.reingold)
+
+#Heatmap
+dimnames(book4) <- list(as.vector(names.df$name), as.vector(names.df$name))
+heatmap(book4, symm=TRUE, col=colors(), keep.dendro = FALSE)
+```
+
+```{r}
+book5<- as.matrix(read.table("hpbook5.txt"))
+names.df<-read.table("hpnames.txt", header=TRUE)
+book5.graph<-graph_from_adjacency_matrix(book5, mode="undirected")
+V(book5.graph)$name=as.vector(names.df$name)
+plot(simplify(book5.graph), layout=layout.fruchterman.reingold(book4.graph, niter=10000), vertex.size=1.5,vertex.label.cex=0.5)
+summary(simplify(book5.graph))
+
+#Edge Density
+edge_density(book5.graph, loops = FALSE)
+
+#Average Network Degree
+mean(degree(book5.graph, v = V(book5.graph), mode = "all", loops = FALSE, normalized = FALSE))
+
+#Degree Distrubution
+hist(degree_distribution(book5.graph, cumulative = FALSE), main="degree distribution")
+
+#Clustering
+transitivity(simplify(book5.graph))#Global
+transitivity(simplify(book5.graph), type = "average")#Local Avg
+
+#Centrality Scores
+eigen.cent <- eigen_centrality(book5.graph)
+V(book5.graph)$centrality<-eigen.cent$vector
+
+write.csv(V(book5.graph)$name, file = "doo.csv")
+nodes2 <- read.csv("doo.csv", header=T)
+nodes2[, 3]<-V(book5.graph)$centrality
+dat1<-nodes2[order(-nodes2$V3),]
+
+#Betweeness Score
+nodes2[,4]<-betweenness(book5.graph)
+dat2<-nodes2[order(-nodes2$V4),]
+
+#Closeness Score
+nodes2[,5]<-closeness(book5.graph)
+dat3<-nodes2[order(-nodes2$V5),]
+
+#Hubs Scores
+nodes2[,6]<-hub_score(book5.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat4<-nodes2[order(-nodes2$V6),]
+
+#Authority Scores
+nodes2[,7]<-authority_score(book5.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat5<-nodes2[order(-nodes2$V7),]
+
+#Transitivity
+nodes2[,8]<-transitivity(simplify(book5.graph), type = "local")#Local
+dat6<-nodes2[order(-nodes2$V8),]
+  
+head(dat1$x)
+head(dat2$x)
+head(dat3$x)
+head(dat4$x)
+head(dat5$x)
+head(dat6$x)
+
+#Community Detection
+wc <- walktrap.community(simplify(book5.graph))
+plot(wc, simplify(book5.graph), vertex.size=2, vertex.label.cex=0.35, layout=layout.fruchterman.reingold)
+modularity(wc)
+
+#Heatmap
+dimnames(book5) <- list(as.vector(names.df$name), as.vector(names.df$name))
+heatmap(book5, symm=TRUE, col=colors(), keep.dendro = FALSE)
+```
+
+```{r}
+book6<- as.matrix(read.table("hpbook6.txt"))
+names.df<-read.table("hpnames.txt", header=TRUE)
+book6.graph<-graph_from_adjacency_matrix(book6, mode="undirected")
+V(book6.graph)$name=as.vector(names.df$name)
+plot(simplify(book6.graph), layout=layout.fruchterman.reingold(book6.graph, niter=10000), vertex.size=1.5,vertex.label.cex=0.5)
+summary(simplify(book6.graph))
+
+#Edge Density
+edge_density(book6.graph, loops = FALSE)
+
+#Average Network Degree
+mean(degree(book6.graph, v = V(book6.graph), mode = "all", loops = FALSE, normalized = FALSE))
+
+#Degree Distrubution
+hist(degree_distribution(book6.graph, cumulative = FALSE), main="degree distribution")
+
+#Clustering
+transitivity(simplify(book6.graph))#Global
+transitivity(simplify(book6.graph), type = "average")#Local Avg
+
+#Centrality Scores
+eigen.cent <- eigen_centrality(book6.graph)
+V(book6.graph)$centrality<-eigen.cent$vector
+
+write.csv(V(book6.graph)$name, file = "doo.csv")
+nodes2 <- read.csv("doo.csv", header=T)
+nodes2[, 3]<-V(book6.graph)$centrality
+dat1<-nodes2[order(-nodes2$V3),]
+
+#Betweeness Score
+nodes2[,4]<-betweenness(book6.graph)
+dat2<-nodes2[order(-nodes2$V4),]
+
+#Closeness Score
+nodes2[,5]<-closeness(book6.graph)
+dat3<-nodes2[order(-nodes2$V5),]
+
+#Hubs Scores
+nodes2[,6]<-hub_score(book6.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat4<-nodes2[order(-nodes2$V6),]
+
+#Authority Scores
+nodes2[,7]<-authority_score(book6.graph, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat5<-nodes2[order(-nodes2$V7),]
+
+#Transitivity
+nodes2[,8]<-transitivity(simplify(book6.graph), type = "local")#Local
+dat6<-nodes2[order(-nodes2$V8),]
+  
+head(dat1$x)
+head(dat2$x)
+head(dat3$x)
+head(dat4$x)
+head(dat5$x)
+head(dat6$x)
+
+#Community Detection
+wc <- walktrap.community(simplify(book6.graph))
+plot(wc, simplify(book6.graph), vertex.size=2, vertex.label.cex=0.35, layout=layout.fruchterman.reingold)
+modularity(wc)
+
+#Heatmap
+dimnames(book6) <- list(as.vector(names.df$name), as.vector(names.df$name))
+heatmap(book6, symm=TRUE, col=colors(), keep.dendro = FALSE)
+```
+
+```{r}
+#Binding
+attrs <- rbind(as_data_frame(book6.graph, "vertices"), as_data_frame(book5.graph, "vertices")) %>% unique()
+el <- rbind(as_data_frame(book6.graph), as_data_frame(book5.graph))
+new_g <- graph_from_data_frame(el, directed = FALSE, vertices = attrs)
+V(new_g)$name=as.vector(names.df$name)
+
+attrs <- rbind(as_data_frame(book6.graph, "vertices"), as_data_frame(book5.graph, "vertices")) %>% unique()
+el <- rbind(as_data_frame(book4.graph), as_data_frame(new_g))
+new_g1 <- graph_from_data_frame(el, directed = FALSE, vertices = attrs)
+V(new_g1)$name=as.vector(names.df$name)
+
+
+attrs <- rbind(as_data_frame(book6.graph, "vertices"), as_data_frame(book5.graph, "vertices")) %>% unique()
+el <- rbind(as_data_frame(book3.graph), as_data_frame(new_g1))
+new_g2 <- graph_from_data_frame(el, directed = FALSE, vertices = attrs)
+V(new_g2)$name=as.vector(names.df$name)
+
+attrs <- rbind(as_data_frame(book6.graph, "vertices"), as_data_frame(book5.graph, "vertices")) %>% unique()
+el <- rbind(as_data_frame(book2.graph), as_data_frame(new_g2))
+new_g3 <- graph_from_data_frame(el, directed = FALSE, vertices = attrs)
+V(new_g3)$name=as.vector(names.df$name)
+
+attrs <- rbind(as_data_frame(book6.graph, "vertices"), as_data_frame(book5.graph, "vertices")) %>% unique()
+el <- rbind(as_data_frame(book1.graph), as_data_frame(new_g3))
+new_g4 <- graph_from_data_frame(el, directed = FALSE, vertices = attrs)
+V(new_g4)$name=as.vector(names.df$name)
+plot(simplify(new_g4), layout=layout.fruchterman.reingold(new_g4, niter=10000), vertex.size=1,vertex.label.cex=0.4, asp =0.5)
+summary(new_g4)
+
+#Edge Density
+edge_density(new_g4, loops = FALSE)
+
+#Average Network Degree
+mean(degree(new_g4, v = V(new_g4), mode = "all", loops = FALSE, normalized = FALSE))
+
+#Degree Distrubution
+hist(degree_distribution(new_g4, cumulative = FALSE), main="degree distribution")
+
+#Clustering
+transitivity(simplify(new_g4))#Global
+transitivity(simplify(new_g4), type = "average")#Local Avg
+
+#Centrality Scores
+eigen.cent <- eigen_centrality(new_g4)
+V(new_g4)$centrality<-eigen.cent$vector
+
+write.csv(V(new_g4)$name, file = "doo.csv")
+nodes2 <- read.csv("doo.csv", header=T)
+nodes2[, 3]<-V(new_g4)$centrality
+dat1<-nodes2[order(-nodes2$V3),]
+
+#Betweeness Score
+nodes2[,4]<-betweenness(new_g4)
+dat2<-nodes2[order(-nodes2$V4),]
+
+#Closeness Score
+nodes2[,5]<-closeness(new_g4)
+dat3<-nodes2[order(-nodes2$V5),]
+
+#Hubs Scores
+nodes2[,6]<-hub_score(new_g4, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat4<-nodes2[order(-nodes2$V6),]
+
+#Authority Scores
+nodes2[,7]<-authority_score(new_g4, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat5<-nodes2[order(-nodes2$V7),]
+
+#Transitivity
+nodes2[,8]<-transitivity(simplify(new_g4), type = "local")#Local
+dat6<-nodes2[order(-nodes2$V8),]
+  
+head(dat1$x)
+head(dat2$x)
+head(dat3$x)
+head(dat4$x)
+head(dat5$x)
+head(dat6$x)
+
+#Community Detection
+wc <- walktrap.community(simplify(new_g4))
+plot(wc, simplify(new_g4), vertex.size=2, vertex.label.cex=0.35, layout=layout.fruchterman.reingold)
+modularity(wc)
+summary(simplify(new_g4))
+
+#Heatmap
+add_books = book1+book2+book3+book4+book5+book6
+all.graph<-graph_from_adjacency_matrix(add_books, mode="undirected")
+V(all.graph)$name=as.vector(names.df$name)
+mean_distance(simplify(all.graph), directed = FALSE, unconnected = TRUE)
+diameter(all.graph, directed = FALSE, unconnected = TRUE, weights = NULL)
+
+
+summary(simplify(all.graph))
+
+dimnames(add_books) <- list(as.vector(names.df$name), as.vector(names.df$name))
+heatmap(add_books, col=colors(), symm=TRUE)
+```
+
+```{r}
+#Freinds or Foes
+char<-read.csv("characters.csv", header=T)
+relation<-read.csv("relations.csv", header=T)
+
+graph_alt<-graph_from_data_frame(relation, char, directed = FALSE)
+
+summary(simplify(graph_alt))
+
+E(graph_alt)$color<-"blue"
+
+for (E in 1:513){
+  if(relation[E,3]=="-"){
+    E(graph_alt)$color[E]<-"red"
+  }
+}
+
+plot(simplify(graph_alt), layout.fruchterman.reingold(simplify(graph_alt), niter=1000), vertex.size=1.5, vertex.label.cex=0.35, edge.color=E(graph_alt)$color)
+
+#Edge Density
+edge_density(graph_alt, loops = FALSE)
+
+#Average Network Degree
+mean(degree(graph_alt, v = V(graph_alt), mode = "all", loops = FALSE, normalized = FALSE))
+
+#Degree Distrubution
+hist(degree_distribution(graph_alt, cumulative = FALSE), main="degree distribution")
+
+#Clustering
+transitivity(simplify(graph_alt))#Global
+transitivity(simplify(graph_alt), type = "average")#Local Avg
+
+#Centrality Scores
+eigen.cent <- eigen_centrality(graph_alt)
+V(graph_alt)$centrality<-eigen.cent$vector
+
+write.csv(V(graph_alt)$name, file = "doo.csv")
+nodes2 <- read.csv("doo.csv", header=T)
+nodes2[, 3]<-V(graph_alt)$centrality
+dat1<-nodes2[order(-nodes2$V3),]
+
+#Betweeness Score
+nodes2[,4]<-betweenness(graph_alt)
+dat2<-nodes2[order(-nodes2$V4),]
+
+#Closeness Score
+nodes2[,5]<-closeness(graph_alt)
+dat3<-nodes2[order(-nodes2$V5),]
+
+#Hubs Scores
+nodes2[,6]<-hub_score(graph_alt, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat4<-nodes2[order(-nodes2$V6),]
+
+#Authority Scores
+nodes2[,7]<-authority_score(graph_alt, scale = TRUE, weights = NULL, options = arpack_defaults)$vector
+dat5<-nodes2[order(-nodes2$V7),]
+
+#Transitivity
+nodes2[,8]<-transitivity(simplify(graph_alt), type = "local")#Local
+dat6<-nodes2[order(-nodes2$V8),]
+  
+head(dat1$x)
+head(dat2$x)
+head(dat3$x)
+head(dat4$x)
+head(dat5$x)
+head(dat6$x)
+
+#Community Detection
+wc <- walktrap.community(simplify(graph_alt))
+plot(wc, simplify(graph_alt), vertex.size=2, vertex.label.cex=0.35, layout=layout.fruchterman.reingold)
+modularity(wc)
+table(membership(wc))
+mean_distance(simplify(graph_alt), directed = FALSE, unconnected = TRUE)
+diameter(graph_alt, directed = FALSE, unconnected = TRUE, weights = NULL)
+
+
+summary(simplify(graph_alt))
+```
+
+```{r}
+hp <- read.csv("hpattributes1.csv", header=T)
+
+hp$year[hp$schoolyear == 1991] <- 'Harrys Year'
+hp$year[hp$schoolyear != 1991] <- 'Not Harrys Year' 
+
+hp$SexString[hp$gender == 1] <- 'Male'
+hp$SexString[hp$gender == 2] <- 'Female'
+
+hp$group[hp$house == 1] <- 'Gryfindor' 
+hp$group[hp$house == 4] <- 'Slytherin'
+hp$group[hp$house == 2] <- 'HufflePuff' 
+hp$group[hp$house == 3] <- 'Ravenclaw' 
+
+with(hp, table(group, SexString, year))
+
+n = 64 # count of vertices
+withinGroupTies <- 0 # within group ties
+betweenGroupTies <- 0 # between groups ties 
+for (i in 1:n) {
+  for (j in 1:n) {
+    if (hp$gender[i] == hp$gender[j]) {
+      withinGroupTies = withinGroupTies + add_books[i,j] }
+    if (hp$gender[i] != hp$gender[j]) { 
+      betweenGroupTies = betweenGroupTies + add_books[i,j]
+    } 
+  }
+}
+totalTies = withinGroupTies + betweenGroupTies
+withinGroupsPercentGender = format(round(withinGroupTies/totalTies * 100, 2), nsmall = 2) 
+betweenGroupPercentGender = format(round(betweenGroupTies/totalTies * 100, 2), nsmall = 2)
+withinGroupsPercentGender
+betweenGroupPercentGender
+n = 64 # count of vertices
+withinGroupTies <- 0 # within group ties
+betweenGroupTies <- 0 # between groups ties 
+for (i in 1:n) {
+  for (j in 1:n) {
+    if (hp$house[i] == hp$house[j]) {
+      withinGroupTies = withinGroupTies + add_books[i,j] }
+    if (hp$house[i] != hp$house[j]) { 
+      betweenGroupTies = betweenGroupTies + add_books[i,j]
+    } 
+  }
+}
+totalTies = withinGroupTies + betweenGroupTies
+withinGroupsPercentHouse = format(round(withinGroupTies/totalTies * 100, 2), nsmall = 2) 
+betweenGroupPercentHouse = format(round(betweenGroupTies/totalTies * 100, 2), nsmall = 2)
+withinGroupsPercentHouse
+betweenGroupPercentHouse
+
+n = 64 # count of vertices
+withinGroupTies <- 0 # within group ties
+betweenGroupTies <- 0 # between groups ties 
+for (i in 1:n) {
+  for (j in 1:n) {
+    if (hp$year[i] == hp$year[j]) {
+      withinGroupTies = withinGroupTies + add_books[i,j] }
+    if (hp$year[i] != hp$year[j]) { 
+      betweenGroupTies = betweenGroupTies + add_books[i,j]
+    } 
+  }
+}
+totalTies = withinGroupTies + betweenGroupTies
+withinGroupsPercentYear = format(round(withinGroupTies/totalTies * 100, 2), nsmall = 2) 
+betweenGroupPercentYear = format(round(betweenGroupTies/totalTies * 100, 2), nsmall = 2)
+withinGroupsPercentYear
+betweenGroupPercentYear
+```
+
+
